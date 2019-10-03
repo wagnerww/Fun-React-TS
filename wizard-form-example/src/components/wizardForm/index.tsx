@@ -5,7 +5,7 @@ import {
   IPageDetails,
   IPage,
   TswitchPage
-} from "../../models/interfaces/wizardForm";
+} from "../../models/interfaces/wizardForm.interface";
 
 interface TESTE {
   Page: JSX.Element;
@@ -36,7 +36,6 @@ export default function WizardForm({
   const activeChildren = React.Children.toArray(children)[page.pageActual];
 
   function handleSubmit(values: any, actions: any) {
-    console.log("submit ", values);
     const isLastPage = page.pageActual === React.Children.count(children) - 1;
     if (isLastPage) {
       return onSubmitForm(values, actions);
@@ -46,19 +45,29 @@ export default function WizardForm({
     }
   }
 
+  const CabecalhoWizard = () => (
+    <div style={{ display: "flex" }}>
+      {page.pages.map(pag => (
+        <div key={pag.page} style={{ padding: "10px" }}>
+          {page.pageActual >= pag.page && (
+            <p style={{ color: "#b3b3" }}>{pag.pageDescription}</p>
+          )}
+          {page.pageActual < pag.page && (
+            <p style={{ color: "#000" }}>{pag.pageDescription}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div>
+      <CabecalhoWizard />
       <Formik
         initialValues={initialValueForm}
         enableReinitialize={false}
         onSubmit={handleSubmit}
-        render={({
-          values,
-          handleSubmit,
-          isSubmitting,
-          handleChange,
-          setFieldValue
-        }) => (
+        render={({ handleSubmit }) => (
           <form onSubmit={handleSubmit}>
             {activeChildren}
 

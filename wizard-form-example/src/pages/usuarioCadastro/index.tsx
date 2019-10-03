@@ -1,12 +1,17 @@
 import React from "react";
-import WizardForm from "../../components/wizardForm";
-import { IUsuario } from "../../models/interfaces/usuario.interface";
-import { IPageDetails } from "../../models/interfaces/wizardForm";
+import axios from "axios";
 import { Field, FormikValues, FormikActions, FieldProps } from "formik";
 
+import WizardForm from "../../components/wizardForm";
+
+import { IUsuario } from "../../models/interfaces/usuario.interface";
+import { IPageDetails } from "../../models/interfaces/wizardForm.interface";
+import { IViaCEP } from "../../models/interfaces/viacep.interface";
+
 const pagesSteps: IPageDetails[] = [
-  { page: 0, pageDescription: "Pagina 1" },
-  { page: 0, pageDescription: "FIM" }
+  { page: 0, pageDescription: "Dados Básicos" },
+  { page: 1, pageDescription: "Endereço" },
+  { page: 2, pageDescription: "FIM" }
 ];
 
 const INITIAL_VALUES: IUsuario = {
@@ -14,15 +19,28 @@ const INITIAL_VALUES: IUsuario = {
   idade: 0,
   nome: "",
   sobrenome: "",
-  cep: ""
+  cep: "",
+  cidade: "",
+  estado: ""
 };
 
 export default function UsuarioCadastro(): JSX.Element {
+  async function viaCEPService(
+    FormikActions: FormikActions<IUsuario>,
+    cep: string
+  ) {
+    const { data } = await axios.get<IViaCEP>(
+      `https://viacep.com.br/ws/${cep}/json/`
+    );
+
+    FormikActions.setFieldValue("cidade", data.localidade);
+    FormikActions.setFieldValue("estado", data.uf);
+  }
+
   function onSubmit(
     values: FormikValues,
     actions: FormikActions<FormikValues>
   ) {
-    console.log(actions);
     console.log(JSON.stringify(values, null, 2));
   }
 
@@ -37,18 +55,40 @@ export default function UsuarioCadastro(): JSX.Element {
         <Field name="nome" component="input" type="text" placeholder="Nome" />
         <label htmlFor="sobrenome">Sobrenome</label>
         <Field
+          name="sobrenome"
+          component="input"
+          type="text"
+          placeholder="Sobrenome"
+        />
+      </div>
+      <div>
+        <label htmlFor="cep">CEP</label>
+        <Field
           render={({ form }: FieldProps<IUsuario>) => (
             <input
-              name="sobrenome"
+              name="cep"
               type="text"
+              onChange={form.handleChange}
               onBlur={() => {
-                form.setFieldValue("cep", "98910-000");
+                viaCEPService(form, form.values.cep);
               }}
             />
           )}
         />
-        <label htmlFor="cep">CEP</label>
-        <Field name="cep" type="text"></Field>
+        <label htmlFor="cidade">Cidade</label>
+        <Field
+          name="cidade"
+          component="input"
+          type="text"
+          placeholder="Cidade"
+        />
+        <label htmlFor="estado">estado</label>
+        <Field
+          name="estado"
+          component="input"
+          type="text"
+          placeholder="Estado"
+        />
       </div>
       <div>
         <label htmlFor="email">Email</label>

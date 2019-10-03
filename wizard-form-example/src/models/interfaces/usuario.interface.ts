@@ -4,4 +4,6 @@ export interface IUsuario {
   email: string;
   idade: number;
   cep: string;
+  cidade: string;
+  estado: string;
 }
