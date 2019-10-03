@@ -1,11 +1,11 @@
 import React from "react";
 
-import Wizard from "./components/wizard";
+import UsuarioCadastro from "./pages/usuarioCadastro";
 
 const App: React.FC = () => {
   return (
     <div>
-      <Wizard />
+      <UsuarioCadastro />
     </div>
   );
 };
