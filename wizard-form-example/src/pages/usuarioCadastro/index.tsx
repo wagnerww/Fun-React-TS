@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { Field, FormikValues, FormikActions, FieldProps } from "formik";
 
 import WizardForm from "../../components/wizardForm";
+import SpinnerLocal from "../../components/spinner/spinnerLocal";
 
 import { IUsuario } from "../../models/interfaces/usuario.interface";
 import { IPageDetails } from "../../models/interfaces/wizardForm.interface";
+import { ILoading } from "../../models/interfaces/loading.interface";
 import { IViaCEP } from "../../models/interfaces/viacep.interface";
 
 const pagesSteps: IPageDetails[] = [
@@ -25,16 +27,20 @@ const INITIAL_VALUES: IUsuario = {
 };
 
 export default function UsuarioCadastro(): JSX.Element {
+  const [loading, setLoading] = useState<ILoading>({ isLoading: false });
+
   async function viaCEPService(
     FormikActions: FormikActions<IUsuario>,
     cep: string
   ) {
+    setLoading({ isLoading: true });
     const { data } = await axios.get<IViaCEP>(
       `https://viacep.com.br/ws/${cep}/json/`
     );
 
     FormikActions.setFieldValue("cidade", data.localidade);
     FormikActions.setFieldValue("estado", data.uf);
+    setLoading({ isLoading: false });
   }
 
   function onSubmit(
@@ -45,62 +51,99 @@ export default function UsuarioCadastro(): JSX.Element {
   }
 
   return (
-    <WizardForm
-      pagesSteps={pagesSteps}
-      initialValueForm={INITIAL_VALUES}
-      onSubmitForm={onSubmit}
-    >
-      <div>
-        <label htmlFor="nome">Nome</label>
-        <Field name="nome" component="input" type="text" placeholder="Nome" />
-        <label htmlFor="sobrenome">Sobrenome</label>
-        <Field
-          name="sobrenome"
-          component="input"
-          type="text"
-          placeholder="Sobrenome"
-        />
-      </div>
-      <div>
-        <label htmlFor="cep">CEP</label>
-        <Field
-          render={({ form }: FieldProps<IUsuario>) => (
-            <input
-              name="cep"
+    <React.Fragment>
+      {loading.isLoading && <SpinnerLocal />}
+      <WizardForm
+        pagesSteps={pagesSteps}
+        initialValueForm={INITIAL_VALUES}
+        onSubmitForm={onSubmit}
+      >
+        <section>
+          <div className="form-group">
+            <label htmlFor="nome">Nome</label>
+            <Field
+              className="form-control"
+              name="nome"
+              component="input"
               type="text"
-              onChange={form.handleChange}
-              onBlur={() => {
-                viaCEPService(form, form.values.cep);
-              }}
+              placeholder="Nome"
             />
-          )}
-        />
-        <label htmlFor="cidade">Cidade</label>
-        <Field
-          name="cidade"
-          component="input"
-          type="text"
-          placeholder="Cidade"
-        />
-        <label htmlFor="estado">estado</label>
-        <Field
-          name="estado"
-          component="input"
-          type="text"
-          placeholder="Estado"
-        />
-      </div>
-      <div>
-        <label htmlFor="email">Email</label>
-        <Field name="email" component="input" type="text" placeholder="Email" />
-        <label htmlFor="sobrenome">Idade</label>
-        <Field
-          name="idade"
-          component="input"
-          type="number"
-          placeholder="Idade"
-        />
-      </div>
-    </WizardForm>
+          </div>
+          <div className="form-group">
+            <label htmlFor="sobrenome">Sobrenome</label>
+            <Field
+              className="form-control"
+              name="sobrenome"
+              component="input"
+              type="text"
+              placeholder="Sobrenome"
+            />
+          </div>
+        </section>
+        <section>
+          <div className="form-group">
+            <label htmlFor="cep">CEP</label>
+            <Field
+              render={({ form }: FieldProps<IUsuario>) => (
+                <input
+                  className="form-control"
+                  name="cep"
+                  type="text"
+                  onChange={form.handleChange}
+                  onBlur={() => {
+                    viaCEPService(form, form.values.cep);
+                  }}
+                  value={form.values.cep}
+                />
+              )}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="cidade">Cidade</label>
+            <Field
+              className="form-control"
+              name="cidade"
+              component="input"
+              type="text"
+              placeholder="Cidade"
+              disabled
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="estado">estado</label>
+            <Field
+              className="form-control"
+              name="estado"
+              component="input"
+              type="text"
+              placeholder="Estado"
+              disabled
+            />
+          </div>
+        </section>
+        <section>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <Field
+              className="form-control"
+              name="email"
+              component="input"
+              type="text"
+              placeholder="Email"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="sobrenome">Idade</label>
+            <Field
+              className="form-control"
+              name="idade"
+              component="input"
+              type="number"
+              placeholder="Idade"
+            />
+          </div>
+        </section>
+      </WizardForm>
+    </React.Fragment>
   );
 }

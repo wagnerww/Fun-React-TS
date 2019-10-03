@@ -35,22 +35,22 @@ export default function WizardForm({
   const childrenLength = React.Children.toArray(children).length - 1;
   const activeChildren = React.Children.toArray(children)[page.pageActual];
 
-  function handleSubmit(values: any, actions: any) {
+  function handleSubmit(values: any, bag: any) {
     const isLastPage = page.pageActual === React.Children.count(children) - 1;
     if (isLastPage) {
-      return onSubmitForm(values, actions);
+      return onSubmitForm(values, bag);
     } else {
-      /*this.next(values);
-      bag.setSubmitting(false);*/
+      bag.setTouched({});
+      bag.setSubmitting(false);
     }
   }
 
   const CabecalhoWizard = () => (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", justifyContent: "center" }}>
       {page.pages.map(pag => (
         <div key={pag.page} style={{ padding: "10px" }}>
           {page.pageActual >= pag.page && (
-            <p style={{ color: "#b3b3" }}>{pag.pageDescription}</p>
+            <p style={{ color: "rgb(16, 75, 146)" }}>{pag.pageDescription}</p>
           )}
           {page.pageActual < pag.page && (
             <p style={{ color: "#000" }}>{pag.pageDescription}</p>
@@ -71,18 +71,26 @@ export default function WizardForm({
           <form onSubmit={handleSubmit}>
             {activeChildren}
 
-            <div>
+            <div className="bd-example">
               {page.pageActual > 0 && (
-                <button onClick={() => switchPage(TswitchPage.Previous)}>
+                <button
+                  className="btn btn-dark mr-2"
+                  onClick={() => switchPage(TswitchPage.Previous)}
+                >
                   Anterior
                 </button>
               )}
               {page.pageActual < childrenLength && (
-                <button onClick={() => switchPage(TswitchPage.Next)}>
+                <button
+                  className="btn btn-dark mr-2"
+                  onClick={() => switchPage(TswitchPage.Next)}
+                >
                   Próxima
                 </button>
               )}
-              {page.pageActual === childrenLength && <button>Finalizar</button>}
+              {page.pageActual === childrenLength && (
+                <button className="btn btn-success mr-2">Finalizar</button>
+              )}
             </div>
           </form>
         )}
