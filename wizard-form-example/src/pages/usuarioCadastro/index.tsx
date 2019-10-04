@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Field, FormikValues, FormikActions, FieldProps } from "formik";
+import {
+  Field,
+  FormikValues,
+  FormikActions,
+  FieldProps,
+  ErrorMessage
+} from "formik";
 
 import WizardForm from "../../components/wizardForm";
 import SpinnerLocal from "../../components/spinner/spinnerLocal";
@@ -58,7 +64,15 @@ export default function UsuarioCadastro(): JSX.Element {
         initialValueForm={INITIAL_VALUES}
         onSubmitForm={onSubmit}
       >
-        <section>
+        <WizardForm.Page
+          validate={(values: IUsuario) => {
+            const errors: Partial<IUsuario> = {};
+            if (!values.nome) {
+              errors.nome = "Required";
+            }
+            return errors;
+          }}
+        >
           <div className="form-group">
             <label htmlFor="nome">Nome</label>
             <Field
@@ -67,7 +81,9 @@ export default function UsuarioCadastro(): JSX.Element {
               component="input"
               type="text"
               placeholder="Nome"
+              validate="Required"
             />
+            <ErrorMessage name="nome" component="div" className="field-error" />
           </div>
           <div className="form-group">
             <label htmlFor="sobrenome">Sobrenome</label>
@@ -79,8 +95,8 @@ export default function UsuarioCadastro(): JSX.Element {
               placeholder="Sobrenome"
             />
           </div>
-        </section>
-        <section>
+        </WizardForm.Page>
+        <WizardForm.Page>
           <div className="form-group">
             <label htmlFor="cep">CEP</label>
             <Field
@@ -120,8 +136,16 @@ export default function UsuarioCadastro(): JSX.Element {
               disabled
             />
           </div>
-        </section>
-        <section>
+        </WizardForm.Page>
+        <WizardForm.Page
+          validate={(values: IUsuario) => {
+            const errors: Partial<IUsuario> = {};
+            if (!values.email) {
+              errors.email = "Required";
+            }
+            return errors;
+          }}
+        >
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <Field
@@ -130,6 +154,11 @@ export default function UsuarioCadastro(): JSX.Element {
               component="input"
               type="text"
               placeholder="Email"
+            />
+            <ErrorMessage
+              name="email"
+              component="div"
+              className="field-error"
             />
           </div>
           <div className="form-group">
@@ -142,7 +171,7 @@ export default function UsuarioCadastro(): JSX.Element {
               placeholder="Idade"
             />
           </div>
-        </section>
+        </WizardForm.Page>
       </WizardForm>
     </React.Fragment>
   );

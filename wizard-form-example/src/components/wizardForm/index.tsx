@@ -1,5 +1,5 @@
-import React, { useState, ReactNode, ReactElement } from "react";
-import { Formik, FormikActions } from "formik";
+import React, { useState, ReactNode, ReactElement, ReactChildren } from "react";
+import { Formik, ErrorMessage } from "formik";
 import { IUsuario } from "../../models/interfaces/usuario.interface";
 import {
   IPageDetails,
@@ -7,9 +7,7 @@ import {
   TswitchPage
 } from "../../models/interfaces/wizardForm.interface";
 
-interface TESTE {
-  Page: JSX.Element;
-}
+import DebugFormik from "../../utils/debugFormik";
 
 interface IProps {
   children: JSX.Element[];
@@ -18,13 +16,23 @@ interface IProps {
   onSubmitForm: Function;
 }
 
-export default function WizardForm({
+type PageProps = {
+  validate?(values: IUsuario): any;
+};
+
+function Page(props: any): JSX.Element {
+  return props.children;
+}
+
+function WizardForm({
   children,
   initialValueForm,
   pagesSteps,
   onSubmitForm
 }: IProps): JSX.Element {
   const [page, setPage] = useState<IPage>({ pageActual: 0, pages: pagesSteps });
+  const childrenLength = React.Children.toArray(children).length - 1;
+  const activeChildren = React.Children.toArray(children)[page.pageActual];
 
   function switchPage(pageSwitch: TswitchPage) {
     let { pageActual } = page;
@@ -32,10 +40,13 @@ export default function WizardForm({
 
     setPage(state => ({ ...state, pageActual }));
   }
-  const childrenLength = React.Children.toArray(children).length - 1;
-  const activeChildren = React.Children.toArray(children)[page.pageActual];
 
-  function handleSubmit(values: any, bag: any) {
+  function handleValidate(values: IUsuario) {
+    const activePage = React.Children.toArray(children)[page.pageActual];
+    return activePage.props.validate ? activePage.props.validate(values) : {};
+  }
+
+  function handleSubmit(values: IUsuario, bag: any) {
     const isLastPage = page.pageActual === React.Children.count(children) - 1;
     if (isLastPage) {
       return onSubmitForm(values, bag);
@@ -67,7 +78,8 @@ export default function WizardForm({
         initialValues={initialValueForm}
         enableReinitialize={false}
         onSubmit={handleSubmit}
-        render={({ handleSubmit }) => (
+        validate={handleValidate}
+        render={({ handleSubmit, isValid }) => (
           <form onSubmit={handleSubmit}>
             {activeChildren}
 
@@ -75,7 +87,9 @@ export default function WizardForm({
               {page.pageActual > 0 && (
                 <button
                   className="btn btn-dark mr-2"
-                  onClick={() => switchPage(TswitchPage.Previous)}
+                  onClick={() =>
+                    isValid ? switchPage(TswitchPage.Previous) : null
+                  }
                 >
                   Anterior
                 </button>
@@ -83,7 +97,9 @@ export default function WizardForm({
               {page.pageActual < childrenLength && (
                 <button
                   className="btn btn-dark mr-2"
-                  onClick={() => switchPage(TswitchPage.Next)}
+                  onClick={() =>
+                    isValid ? switchPage(TswitchPage.Next) : null
+                  }
                 >
                   Próxima
                 </button>
@@ -92,9 +108,13 @@ export default function WizardForm({
                 <button className="btn btn-success mr-2">Finalizar</button>
               )}
             </div>
+            <DebugFormik />
           </form>
         )}
       ></Formik>
     </div>
   );
 }
+
+WizardForm.Page = Page;
+export default WizardForm;
