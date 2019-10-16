@@ -4,6 +4,7 @@ export interface IPedido {
   id: number;
   nome: string;
   email: string;
+  dataCriacao: string;
   rua: string;
   bairro?: string;
   produtos: IProduto[];

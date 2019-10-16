@@ -9,11 +9,8 @@ const App: React.FC = () => {
   return (
     <React.Fragment>
       <CssBaseline />
-      <Container maxWidth="lg">
-        <Typography
-          component="div"
-          style={{ backgroundColor: "#cfe8fc", height: "100vh" }}
-        >
+      <Container maxWidth="xl">
+        <Typography component="div" style={{ height: "100vh" }}>
           <Box py={3} px={2}>
             <Cadastro />
           </Box>

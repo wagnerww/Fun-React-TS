@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ChangeEvent, useCallback } from "react";
 import {
   Formik,
   Form,
@@ -8,14 +8,17 @@ import {
   FieldArray
 } from "formik";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import { LinearProgress } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-
+import {
+  LinearProgress,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Grid,
+  Paper
+} from "@material-ui/core";
 import FormFieldText from "../../components/Form/FormFieldText";
 import FormFieldMoney from "../../components/Form/FormFieldMoney";
 
@@ -31,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     textField: {
       marginRight: theme.spacing(1),
-      width: 200
+      width: 300
     }
   })
 );
@@ -51,6 +54,7 @@ const Cadastros: React.FC = () => {
     id: 0,
     nome: "",
     email: "",
+    dataCriacao: "",
     rua: "",
     bairro: "",
     produtos: [INITIAL_PRODUTO],
@@ -67,147 +71,202 @@ const Cadastros: React.FC = () => {
     }, 1000);
   }
 
+  async function generateSubTotal(
+    i: number,
+    setFieldValue: any,
+    produtos: IProduto[]
+  ) {
+    produtos[i].subTotal = (produtos[i].quantidade * produtos[i].valor) | 0;
+
+    await setFieldValue(`produtos.${i}.subTotal`, produtos[i].subTotal);
+
+    let total: number = 0;
+    await produtos.map(prod => {
+      total += prod.subTotal;
+    });
+    setFieldValue(`total`, total);
+  }
+
+  function generateTotal(setFieldValue: any, produtos: IProduto[]) {
+    console.log("produtos ", produtos);
+    let total: number = 0;
+    produtos.map(prod => {
+      total += prod.subTotal;
+    });
+    setFieldValue(`total`, total);
+  }
+
   return (
-    <div>
-      <h2>Cadastro</h2>
-      <Formik
-        initialValues={INITIAL_VALUES}
-        onSubmit={handleSubmit}
-        render={({ submitForm, isSubmitting, values }) => (
-          <Form className={styles.container}>
-            <Field
-              className={styles.textField}
-              label="Nome"
-              name="nome"
-              component={FormFieldText}
-              disabled={isSubmitting}
-            />
-            <Field
-              className={styles.textField}
-              label="email"
-              name="email"
-              component={FormFieldText}
-              disabled={isSubmitting}
-            />
-            <Field
-              className={styles.textField}
-              label="Rua"
-              name="rua"
-              component={FormFieldText}
-              disabled={isSubmitting}
-            />
-            <Field
-              className={styles.textField}
-              label="Bairro"
-              name="bairro"
-              component={FormFieldText}
-              disabled={isSubmitting}
-            />
-            <FieldArray
-              name="produtos"
-              render={arrayProdutos => (
-                <React.Fragment>
-                  <Table aria-label="spanning table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>id</TableCell>
-                        <TableCell>Descrição</TableCell>
-                        <TableCell>Valor</TableCell>
-                        <TableCell>Qtd.</TableCell>
-                        <TableCell>Sub-Total</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {values.produtos &&
-                        values.produtos.length > 0 &&
-                        values.produtos.map((prod, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <Field
-                                className={styles.textField}
-                                name={`produtos.${index}.id`}
-                                component={FormFieldText}
-                                disabled={isSubmitting}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Field
-                                className={styles.textField}
-                                name={`produtos.${index}.descricao`}
-                                component={FormFieldText}
-                                disabled={isSubmitting}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Field
-                                className={styles.textField}
-                                name={`produtos.${index}.valor`}
-                                component={FormFieldText}
-                                disabled={isSubmitting}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Field
-                                className={styles.textField}
-                                name={`produtos.${index}.quantidade`}
-                                component={FormFieldText}
-                                disabled={isSubmitting}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Field
-                                className={styles.textField}
-                                name={`produtos.${index}.subTotal`}
-                                component={FormFieldText}
-                                disabled={isSubmitting}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                  <div style={{ width: "100%" }}>
-                    <Button
-                      variant="contained"
+    <Grid container sm>
+      <Grid item sm>
+        <Paper style={{ padding: "20px" }}>
+          <h2>Cadastro</h2>
+          <Formik
+            initialValues={INITIAL_VALUES}
+            onSubmit={handleSubmit}
+            enableReinitialize={true}
+            render={({
+              submitForm,
+              isSubmitting,
+              values,
+              setFieldValue,
+              handleChange
+            }) => (
+              <Form className={styles.container}>
+                <Field
+                  className={styles.textField}
+                  label="Nome"
+                  name="nome"
+                  component={FormFieldText}
+                  disabled={isSubmitting}
+                />
+                <Field
+                  className={styles.textField}
+                  label="email"
+                  name="email"
+                  component={FormFieldText}
+                  disabled={isSubmitting}
+                />
+                <Field
+                  className={styles.textField}
+                  label="Rua"
+                  name="rua"
+                  component={FormFieldText}
+                  disabled={isSubmitting}
+                />
+                <Field
+                  className={styles.textField}
+                  label="Bairro"
+                  name="bairro"
+                  component={FormFieldText}
+                  disabled={isSubmitting}
+                />
+                <Paper style={{ margin: "40px 15px", padding: "20px" }}>
+                  <h3>Produtos</h3>
+                  <FieldArray
+                    name="produtos"
+                    render={arrayProdutos => (
+                      <React.Fragment>
+                        <Table
+                          size="small"
+                          aria-label="a dense table"
+                          style={{ marginBottom: "20px" }}
+                        >
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>id</TableCell>
+                              <TableCell>Descrição</TableCell>
+                              <TableCell>Valor</TableCell>
+                              <TableCell>Qtd.</TableCell>
+                              <TableCell>Sub-Total</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {values.produtos &&
+                              values.produtos.length > 0 &&
+                              values.produtos.map((prod, index) => (
+                                <TableRow key={index}>
+                                  <TableCell>
+                                    <Field
+                                      name={`produtos.${index}.id`}
+                                      component={FormFieldText}
+                                      disabled={isSubmitting}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Field
+                                      className={styles.textField}
+                                      name={`produtos.${index}.descricao`}
+                                      component={FormFieldText}
+                                      disabled={isSubmitting}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Field
+                                      className={styles.textField}
+                                      name={`produtos.${index}.valor`}
+                                      component={FormFieldMoney}
+                                      disabled={isSubmitting}
+                                      onBlur={async () => {
+                                        await generateSubTotal(
+                                          index,
+                                          setFieldValue,
+                                          values.produtos
+                                        );
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Field
+                                      name={`produtos.${index}.quantidade`}
+                                      component={FormFieldText}
+                                      disabled={isSubmitting}
+                                      onBlur={async () => {
+                                        await generateSubTotal(
+                                          index,
+                                          setFieldValue,
+                                          values.produtos
+                                        );
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Field
+                                      name={`produtos.${index}.subTotal`}
+                                      component={FormFieldMoney}
+                                      disabled={isSubmitting}
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                        <div style={{ width: "100%" }}>
+                          <Button
+                            variant="contained"
+                            disabled={isSubmitting}
+                            color="primary"
+                            onClick={() => arrayProdutos.push(INITIAL_PRODUTO)}
+                          >
+                            Adicionar produto
+                          </Button>
+                        </div>
+                      </React.Fragment>
+                    )}
+                  />
+                  <Grid container direction="row" justify="flex-end">
+                    <Field
+                      className={styles.textField}
+                      label="Total"
+                      name="total"
+                      component={FormFieldMoney}
                       disabled={isSubmitting}
-                      color="primary"
-                      onClick={() => arrayProdutos.push(INITIAL_PRODUTO)}
-                    >
-                      Adicionar produto
-                    </Button>
-                  </div>
-                </React.Fragment>
-              )}
-            />
+                    />
+                  </Grid>
+                </Paper>
 
-            <Field
-              className={styles.textField}
-              label="Total"
-              name="total"
-              component={FormFieldMoney}
-              disabled={isSubmitting}
-            />
-
-            {isSubmitting && (
-              <div style={{ width: "100%" }}>
-                <LinearProgress color="secondary" />
-              </div>
+                {isSubmitting && (
+                  <Grid item xs={12}>
+                    <LinearProgress color="secondary" />
+                  </Grid>
+                )}
+                <br />
+                <Grid item xs={12}>
+                  <Button
+                    variant="contained"
+                    disabled={isSubmitting}
+                    color="primary"
+                    onClick={submitForm}
+                  >
+                    Primary
+                  </Button>
+                </Grid>
+              </Form>
             )}
-            <br />
-            <div style={{ width: "100%" }}>
-              <Button
-                variant="contained"
-                disabled={isSubmitting}
-                color="primary"
-                onClick={submitForm}
-              >
-                Primary
-              </Button>
-            </div>
-          </Form>
-        )}
-      />
-    </div>
+          />
+        </Paper>
+      </Grid>
+    </Grid>
   );
 };
 

@@ -8,7 +8,6 @@ const FormFieldText: React.FC<FieldProps> = ({ field, form, ...props }) => {
 
   return (
     <TextField
-      fullWidth
       margin="normal"
       helperText={!!errorText}
       {...field}
