@@ -3,7 +3,9 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 import Box from "@material-ui/core/Box";
-import Cadastro from "./pages/Cadastro";
+import Pedidos from "./pages/Pedidos";
+
+import Router from "./routes";
 
 const App: React.FC = () => {
   return (
@@ -12,7 +14,7 @@ const App: React.FC = () => {
       <Container maxWidth="xl">
         <Typography component="div" style={{ height: "100vh" }}>
           <Box py={3} px={2}>
-            <Cadastro />
+            <Router />
           </Box>
         </Typography>
       </Container>

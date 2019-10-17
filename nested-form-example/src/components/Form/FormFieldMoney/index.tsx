@@ -1,30 +1,28 @@
 import React from "react";
-import { FieldProps, getIn, FormikProps, FieldConfig } from "formik";
+import { FieldProps, getIn } from "formik";
 import { TextField } from "@material-ui/core";
-import InputMask from "react-text-mask";
-import createNumberMask from "text-mask-addons/dist/createNumberMask";
+import NumberFormat from "react-number-format";
 
 interface TextMaskCustomProps {
   inputRef: (ref: HTMLInputElement | null) => void;
+  setFieldValue: (field: string, value: any) => void;
+  name: string;
 }
 
 function Mask(props: TextMaskCustomProps) {
-  const numberMask = createNumberMask({
-    prefix: "",
-    suffix: "",
-    allowDecimal: true
-  });
+  const { inputRef, setFieldValue, name, ...rest } = props;
 
-  const { inputRef, ...rest } = props;
   return (
-    <InputMask
+    <NumberFormat
       {...rest}
-      ref={(ref: any) => {
-        inputRef(ref ? ref.inputElement : null);
+      getInputRef={inputRef}
+      thousandSeparator="."
+      isNumericString
+      decimalSeparator=","
+      allowedDecimalSeparators={","}
+      onValueChange={values => {
+        setFieldValue(name, values.floatValue);
       }}
-      mask={numberMask}
-      placeholderChar={"\u2000"}
-      showMask
     />
   );
 }
@@ -37,11 +35,13 @@ const FormFieldMoney: React.FC<FieldProps> = ({ field, form, ...props }) => {
     <TextField
       fullWidth
       margin="normal"
-      helperText={!!errorText}
+      error={!!errorText ? true : false}
+      helperText={!!errorText ? errorText : ""}
       {...field}
       {...props}
       InputProps={{
-        inputComponent: Mask as any
+        inputComponent: Mask as any,
+        inputProps: { setFieldValue: form.setFieldValue }
       }}
     ></TextField>
   );

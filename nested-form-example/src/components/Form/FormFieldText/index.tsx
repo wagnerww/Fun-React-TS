@@ -1,5 +1,5 @@
 import React from "react";
-import { FieldProps, getIn, FormikProps, FieldConfig } from "formik";
+import { FieldProps, getIn } from "formik";
 import { TextField } from "@material-ui/core";
 
 const FormFieldText: React.FC<FieldProps> = ({ field, form, ...props }) => {
@@ -9,7 +9,8 @@ const FormFieldText: React.FC<FieldProps> = ({ field, form, ...props }) => {
   return (
     <TextField
       margin="normal"
-      helperText={!!errorText}
+      error={!!errorText ? true : false}
+      helperText={!!errorText ? errorText : ""}
       {...field}
       {...props}
     ></TextField>
