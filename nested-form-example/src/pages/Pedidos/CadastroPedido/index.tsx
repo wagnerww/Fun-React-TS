@@ -10,6 +10,9 @@ import {
   FormikProps
 } from "formik";
 import * as Yup from "yup";
+import shortid from "shortid";
+
+import api from "../../../services/api";
 
 import FormikDebugger from "../../../utils/formikDebug";
 import FormWrapper from "../../../components/Form/FormWrapper";
@@ -52,35 +55,15 @@ const Cadastros: React.FC = () => {
   const styles = useStyles();
 
   const INITIAL_PRODUTO: IProduto = {
-    id: 0,
+    id: shortid.generate(),
     valor: 0,
     subTotal: 0,
     quantidade: 0,
     descricao: ""
   };
 
-  const schemaValidation = Yup.object().shape<IPedido>({
-    id: Yup.number().required("Informe o id"),
-    nome: Yup.string().required("Informe o nome"),
-    email: Yup.string()
-      .email()
-      .required("Informe o email"),
-    //  dataCriacao: Yup.string().required("Informe a  data"),
-    rua: Yup.string().required("Informe o seu endereco"),
-    total: Yup.number().required("Pedido sem valor"),
-    produtos: Yup.array().of(
-      Yup.object().shape<IProduto>({
-        id: Yup.number().required("Informe o id"),
-        descricao: Yup.string().required("Informe a descricao"),
-        quantidade: Yup.number().required("Informe a quantidade"),
-        valor: Yup.number().required("Informe o valor"),
-        subTotal: Yup.number().required("Informe o subtotal")
-      })
-    )
-  });
-
   const INITIAL_VALUES: IPedido = {
-    id: 0,
+    id: shortid.generate(),
     nome: "",
     email: "",
     //dataCriacao: "",
@@ -90,14 +73,41 @@ const Cadastros: React.FC = () => {
     total: 0
   };
 
-  function handleSubmit(
+  const schemaValidation = Yup.object().shape<IPedido>({
+    id: Yup.string().required("Informe o id"),
+    nome: Yup.string().required("Informe o nome"),
+    email: Yup.string()
+      .email()
+      .required("Informe o email"),
+    //  dataCriacao: Yup.string().required("Informe a  data"),
+    rua: Yup.string().required("Informe o seu endereco"),
+    total: Yup.number().required("Pedido sem valor"),
+    produtos: Yup.array().of(
+      Yup.object().shape<IProduto>({
+        id: Yup.string().required("Informe o id"),
+        descricao: Yup.string().required("Informe a descricao"),
+        quantidade: Yup.number().required("Informe a quantidade"),
+        valor: Yup.number().required("Informe o valor"),
+        subTotal: Yup.number().required("Informe o subtotal")
+      })
+    )
+  });
+
+  async function handleSubmit(
     values: FormikValues,
     actions: FormikActions<FormikValues>
   ) {
-    setTimeout(() => {
+    try {
+      const response = await api.post("/pedidos", values);
+      console.log("response ", response);
+    } catch (error) {
+      console.log("error ", error);
+    }
+    actions.setSubmitting(false);
+    /* setTimeout(() => {
       console.log(JSON.stringify(values, null, 2));
       actions.setSubmitting(false);
-    }, 1000);
+    }, 1000);*/
   }
 
   async function generateSubTotal(
@@ -134,7 +144,6 @@ const Cadastros: React.FC = () => {
             >
               <TableHead>
                 <TableRow>
-                  <TableCell>id</TableCell>
                   <TableCell>Descrição</TableCell>
                   <TableCell>Valor</TableCell>
                   <TableCell>Qtd.</TableCell>
@@ -146,13 +155,6 @@ const Cadastros: React.FC = () => {
                   values.produtos.length > 0 &&
                   values.produtos.map((prod: IProduto, index: number) => (
                     <TableRow key={index}>
-                      <TableCell>
-                        <Field
-                          name={`produtos.${index}.id`}
-                          component={FormFieldText}
-                          disabled={isSubmitting}
-                        />
-                      </TableCell>
                       <TableCell>
                         <Field
                           className={styles.textField}
@@ -206,7 +208,11 @@ const Cadastros: React.FC = () => {
                 variant="contained"
                 disabled={isSubmitting}
                 color="secondary"
-                onClick={() => arrayProdutos.push(INITIAL_PRODUTO)}
+                onClick={() =>
+                  arrayProdutos.push({
+                    INITIAL_PRODUTO
+                  })
+                }
               >
                 Adicionar produto
               </Button>

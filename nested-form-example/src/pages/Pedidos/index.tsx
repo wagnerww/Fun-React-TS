@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { navigate } from "@reach/router";
+
+import api from "../../services/api";
+import { numberFormat } from "../../utils/intl";
 
 import {
   Grid,
@@ -13,8 +16,30 @@ import {
 } from "@material-ui/core";
 
 import FormVisualizationDataWrapper from "../../components/Form/FormVisualizationDataWrapper";
+import { IPedido } from "../../models/interface/pedido.interface";
+
+interface IPedidoFortmated extends IPedido {
+  valorTotalFormatado: string;
+}
 
 const Pedidos: React.FC = () => {
+  const [pedidos, setPedidos] = useState<IPedidoFortmated[]>([]);
+
+  useEffect(() => {
+    async function loadPedidos() {
+      try {
+        const { data } = await api.get<IPedidoFortmated[]>("/pedidos");
+        const pedidos = await data.map<IPedidoFortmated>(pedido => ({
+          valorTotalFormatado: numberFormat(pedido.total),
+          ...pedido
+        }));
+        setPedidos(pedidos);
+      } catch (error) {}
+    }
+
+    loadPedidos();
+  }, []);
+
   return (
     <FormVisualizationDataWrapper title="Consulta de Pedidos">
       <React.Fragment>
@@ -30,21 +55,23 @@ const Pedidos: React.FC = () => {
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell>Dessert (100g serving)</TableCell>
-              <TableCell align="right">Calories</TableCell>
-              <TableCell align="right">Fat&nbsp;(g)</TableCell>
-              <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-              <TableCell align="right">Protein&nbsp;(g)</TableCell>
+              <TableCell>Comprador</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell align="right">Total</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            <TableRow>
-              <TableCell component="th" scope="row"></TableCell>
-              <TableCell align="right"></TableCell>
-              <TableCell align="right"></TableCell>
-              <TableCell align="right"></TableCell>
-              <TableCell align="right"></TableCell>
-            </TableRow>
+            {pedidos.map(pedido => (
+              <TableRow key={pedido.id}>
+                <TableCell component="th" scope="row">
+                  {pedido.nome}
+                </TableCell>
+                <TableCell>{pedido.email}</TableCell>
+                <TableCell align="right">
+                  {pedido.valorTotalFormatado}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </React.Fragment>

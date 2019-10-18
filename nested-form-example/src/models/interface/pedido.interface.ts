@@ -1,7 +1,7 @@
 import { IProduto } from "./produto.interface";
 
 export interface IPedido {
-  id: number;
+  id: string;
   nome: string;
   email: string;
   /*dataCriacao?: string;*/
